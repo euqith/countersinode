@@ -69,10 +69,23 @@
     .alert {
       background-color: #2ecc71;
       color: white;
-      padding: 10px;
+      padding: 10px 15px;
       border-radius: 6px;
       margin-bottom: 15px;
       font-weight: bold;
+    }
+
+    .alert-danger {
+      background-color: #e74c3c;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+    }
+
+    .alert-danger ul {
+      margin: 5px 0 0 0;
+      padding-left: 20px;
     }
 
     table {
@@ -98,8 +111,25 @@
 
   <h2>Pusat Kendali Data Pemilihan Sinode</h2>
 
+  <!-- NOTIFIKASI ERROR VALIDASI FORM -->
+  @if ($errors->any())
+    <div class="alert-danger">
+      <strong>Terjadi kesalahan input:</strong>
+      <ul>
+        @foreach ($errors->all() as $error)
+          <li>{{ $error }}</li>
+        @endforeach
+      </ul>
+    </div>
+  @endif
+
+  <!-- NOTIFIKASI SUKSES / ERROR FLASH SESSION -->
   @if (session('success'))
     <div class="alert">{{ session('success') }}</div>
+  @endif
+
+  @if (session('error'))
+    <div class="alert-danger">{{ session('error') }}</div>
   @endif
 
   <div class="row">
@@ -109,8 +139,9 @@
       <form action="{{ route('position.store') }}" method="POST">
         @csrf
         <div class="form-group">
-          <label>Nama Jabatan Baru</label>
-          <input type="text" name="name" placeholder="Misal: Sekretaris Umum" required>
+          <label>Nama Jabatan Baru <span style="color: red;">*</span></label>
+          <input type="text" name="name" value="{{ old('name') }}" placeholder="Misal: Sekretaris Umum"
+            required>
         </div>
         <button type="submit" class="btn" style="background-color: #1abc9c;">Tambah Jabatan</button>
       </form>
@@ -145,22 +176,29 @@
       <form action="{{ route('candidate.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <div class="form-group">
-          <label>Nama Lengkap</label>
-          <input type="text" name="name" required>
+          <label>Nama Lengkap <span style="color: red;">*</span></label>
+          <input type="text" name="name" value="{{ old('name') }}" required>
         </div>
         <div class="form-group">
-          <label>Pilih Jabatan</label>
+          <label>Pilih Jabatan <span style="color: red;">*</span></label>
           <select name="position_id" required>
             <option value="">-- Pilih Jabatan --</option>
             @foreach ($positions as $pos)
-              <option value="{{ $pos->id }}">{{ $pos->name }}</option>
+              <option value="{{ $pos->id }}" {{ old('position_id') == $pos->id ? 'selected' : '' }}>
+                {{ $pos->name }}
+              </option>
             @endforeach
           </select>
         </div>
+
+        <!-- FOTO DIBUAT OPSIONAL (Atribut required dihapus) -->
         <div class="form-group">
-          <label>Foto</label>
-          <input type="file" name="image" accept="image/*" required>
+          <label>Foto <span style="font-weight: normal; color: #7f8c8d; font-size: 0.85rem;">(Opsional)</span></label>
+          <input type="file" name="image" accept="image/*">
+          <small style="color: #7f8c8d; display: block; margin-top: 4px;">Kosongkan jika tidak ingin mengunggah
+            foto.</small>
         </div>
+
         <button type="submit" class="btn">Simpan Kandidat</button>
       </form>
     </div>
@@ -183,8 +221,13 @@
         @forelse($candidates as $c)
           <tr>
             <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">
-              <img src="{{ asset($c->image) }}" alt="Foto"
-                style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; background-color: #ddd;">
+              <!-- PENGECEKAN JIKA KANDIDAT TIDAK MEMILIKI FOTO -->
+              @if ($c->image)
+                <img src="{{ asset($c->image) }}" alt="Foto"
+                  style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; background-color: #ddd;">
+              @else
+                <span style="color: #95a5a6; font-size: 0.75rem; font-style: italic;">Tanpa Foto</span>
+              @endif
             </td>
             <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; color: #2c3e50;">
               {{ $c->name }}
