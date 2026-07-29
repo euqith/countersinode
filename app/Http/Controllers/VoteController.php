@@ -47,7 +47,7 @@ class VoteController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'position_id' => 'required|exists:positions,id',
-            'image' => 'required|image|mimes:jpeg,png,jpg|max:10240',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:10240',
         ]);
 
         $imageName = null;
